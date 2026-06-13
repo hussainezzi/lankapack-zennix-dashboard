@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lankapack Zennix — Slitting Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e1e4e9;
+      min-height: 100vh;
+    }
+    .container { max-width: 1440px; margin: 0 auto; padding: 24px 32px; }
+
+    /* Header */
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 0; border-bottom: 1px solid #1e2030; margin-bottom: 32px;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 18px; color: #fff;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; }
+    .header h1 span { color: #818cf8; }
+    .header .subtitle { font-size: 13px; color: #6b7280; margin-top: 2px; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .badge {
+      padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .badge-live { background: #065f46; color: #6ee7b7; }
+    .badge-date { background: #1e2030; color: #9ca3af; }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;
+    }
+    .stat-card {
+      background: #161822; border-radius: 12px; padding: 20px;
+      border: 1px solid #1e2030;
+    }
+    .stat-card .label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-card .value { font-size: 32px; font-weight: 800; line-height: 1; }
+    .stat-card .trend { font-size: 12px; margin-top: 6px; }
+    .stat-green .value { color: #34d399; }
+    .stat-yellow .value { color: #fbbf24; }
+    .stat-red .value { color: #f87171; }
+    .stat-blue .value { color: #60a5fa; }
+    .stat-amber .value { color: #f59e0b; }
+
+    /* Pipeline */
+    .pipeline-bar {
+      background: #161822; border-radius: 12px; padding: 24px; margin-bottom: 32px; border: 1px solid #1e2030;
+    }
+    .pipeline-bar h2 { font-size: 14px; color: #9ca3af; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pipeline-stages { display: flex; gap: 16px; align-items: center; }
+    .stage { flex: 1; }
+    .stage-label { font-size: 13px; color: #9ca3af; margin-bottom: 6px; }
+    .stage-bar { height: 10px; border-radius: 6px; overflow: hidden; background: #1e2030; display: flex; }
+    .stage-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
+    .stage-count { font-size: 20px; font-weight: 700; margin-top: 6px; }
+    .stage-arrow { color: #374151; font-size: 22px; }
+
+    /* Section Headers */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 16px; }
+    .section-header h2 { font-size: 16px; font-weight: 600; }
+    .section-header .hint { font-size: 12px; color: #6b7280; }
+
+    /* Tables */
+    .table-wrap {
+      background: #161822; border-radius: 12px; border: 1px solid #1e2030; overflow: hidden;
+      margin-bottom: 24px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: #1a1c2a; }
+    th { padding: 12px 16px; text-align: left; font-weight: 600; color: #9ca3af; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 12px 16px; border-top: 1px solid #1e2030; }
+    tr:hover td { background: #1a1c2b; }
+    .customer { color: #e1e4e9; font-weight: 500; }
+    .paper-type { color: #818cf8; font-size: 12px; }
+    .gsm { color: #6b7280; }
+    .pending { color: #fbbf24; font-weight: 600; }
+    .done { color: #34d399; font-weight: 600; }
+
+    /* Raw Stock Section */
+    .stock-kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .kpi-card {
+      background: #161822; border-radius: 12px; padding: 16px; border: 1px solid #1e2030; text-align: center;
+    }
+    .kpi-card .kpi-value { font-size: 24px; font-weight: 700; }
+    .kpi-card .kpi-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .kpi-green .kpi-value { color: #34d399; }
+    .kpi-blue .kpi-value { color: #60a5fa; }
+    .kpi-amber .kpi-value { color: #f59e0b; }
+
+    .barcode { font-family: monospace; font-size: 12px; color: #6b7280; }
+    .weight { font-weight: 600; color: #e1e4e9; }
+    .stock-in { color: #34d399; }
+    .stock-out { color: #f87171; }
+
+    .wastage-color { color: #f87171; }
+
+    /* Recent Activity */
+    .activity-list { list-style: none; }
+    .activity-item {
+      padding: 12px 16px; border-bottom: 1px solid #1e2030; display: flex; justify-content: space-between; align-items: center;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-customer { font-weight: 500; }
+    .activity-meta { font-size: 12px; color: #6b7280; }
+    .activity-status { font-size: 12px; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+    .activity-new { background: #1e3a5f; color: #93c5fd; }
+    .activity-pending { background: #422006; color: #fde68a; }
+    .activity-done { background: #064e3b; color: #6ee7b7; }
+
+    /* Wastage summary */
+    .wastage-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;
+    }
+    .wastage-stat { text-align: center; padding: 12px; border-radius: 10px; background: #1a1c2a; }
+    .wastage-stat .num { font-size: 18px; font-weight: 700; }
+    .wastage-stat .lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stock-kpi { grid-template-columns: 1fr; }
+      .container { padding: 16px; }
+      .pipeline-stages { flex-direction: column; }
+      .stage-arrow { transform: rotate(90deg); }
+    }
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">LZ</div>
+      <div>
+        <h1>Lankapack <span>Zennix</span></h1>
+        <div class="subtitle">Paper Bag Manufacturing · Slitting Dashboard</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="badge badge-live">● Live</span>
+      <span class="badge badge-date" id="datetime"></span>
+    </div>
+  </div>
+
+  <!-- Overview Stats -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card stat-blue">
+      <div class="label">Total Job Cards</div>
+      <div class="value" id="totalJobCards">—</div>
+      <div class="trend" style="color: #6b7280;">437 cards in system</div>
+    </div>
+    <div class="stat-card stat-amber">
+      <div class="label">Pending Slitting</div>
+      <div class="value" id="pendingSlitting">—</div>
+      <div class="trend" style="color: #fbbf24;">Needs slitting stage</div>
+    </div>
+    <div class="stat-card stat-green">
+      <div class="label">Pending Printing</div>
+      <div class="value" id="pendingPrinting">—</div>
+      <div class="trend" style="color: #34d399;">Needs printing stage</div>
+    </div>
+    <div class="stat-card stat-red">
+      <div class="label">Pending Cutting</div>
+      <div class="value" id="pendingCutting">—</div>
+      <div class="trend" style="color: #34d399;">Needs cutting stage</div>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline-bar">
+    <h2>🏭 Production Pipeline</h2>
+    <div class="pipeline-stages">
+      <div class="stage">
+        <div class="stage-label">Raw Stock</div>
+        <div class="stage-bar"><div class="stage-fill" id="rawStockFill" style="width:100%;background:#6366f1;"></div></div>
+        <div class="stage-count" id="rawStockCount" style="color:#818cf8;">—</div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-label">Slitting</div>
+        <div class="stage-bar"><div class="stage-fill" id="slittingFill" style="background:#f59e0b;"></div></div>
+        <div class="stage-count" id="slittingCount" style="color:#fbbf24;">—</div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-label">Printing</div>
+        <div class="stage-bar"><div class="stage-fill" id="printingFill" style="background:#3b82f6;"></div></div>
+        <div class="stage-count" id="printingCount" style="color:#60a5fa;">—</div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-label">Cutting</div>
+        <div class="stage-bar"><div class="stage-fill" id="cuttingFill" style="background:#8b5cf6;"></div></div>
+        <div class="stage-count" id="cuttingCount" style="color:#a78bfa;">—</div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-label">Completed</div>
+        <div class="stage-bar"><div class="stage-fill" id="completedFill" style="width:100%;background:#10b981;"></div></div>
+        <div class="stage-count" id="completedCount" style="color:#34d399;">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw Stock KPI -->
+  <h2 style="font-size:14px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">📦 Raw Material</h2>
+  <div class="stock-kpi">
+    <div class="kpi-card kpi-green">
+      <div class="kpi-value" id="rawStockInHand">—</div>
+      <div class="kpi-label">Total Raw Rolls In Stock</div>
+    </div>
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-value" id="materialBatchMonth">—</div>
+      <div class="kpi-label">Batches Received This Month</div>
+    </div>
+    <div class="kpi-card kpi-amber">
+      <div class="kpi-value" id="stockInHand">—</div>
+      <div class="kpi-label">Finished Stock (Bags)</div>
+    </div>
+  </div>
+
+  <!-- Slitting Jobs Table -->
+  <div class="section-header">
+    <h2>⚙️ Jobs Pending Slitting</h2>
+    <span class="hint" id="slittingJobHint">—</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Job ID</th><th>Customer</th><th>Paper Type</th><th>GSM</th><th>Size</th><th>Slitting Spec</th><th>Remark</th><th>Date Added</th></tr>
+      </thead>
+      <tbody id="slittingJobsBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Wastage Summary -->
+  <div class="section-header">
+    <h2>📉 Estimated Waste Analysis</h2>
+    <span class="hint">Based on slitting remarks (width differentials)</span>
+  </div>
+  <div class="wastage-grid" id="wastageGrid">
+    <div class="wastage-stat"><div class="num" id="wasteJobs" style="color:#f87171;">—</div><div class="lbl">Jobs With Waste Noted</div></div>
+    <div class="wastage-stat"><div class="num" id="totalWasteWidth" style="color:#fbbf24;">—</div><div class="lbl">Avg Waste Width (cm)</div></div>
+    <div class="wastage-stat"><div class="num" id="noWasteJobs" style="color:#34d399;">—</div><div class="lbl">Jobs With Zero Waste</div></div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="section-header">
+    <h2>🕐 Recent Job Cards</h2>
+    <span class="hint">Last 5 created</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Job ID</th><th>Customer</th><th>Date</th><th>Delivery</th><th>Slitting</th><th>Printing</th><th>Cutting</th></tr>
+      </thead>
+      <tbody id="recentJobsBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div style="margin-top:48px;padding:20px 0;border-top:1px solid #1e2030;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#4b5563;">
+    <span>Lankapack Zennix · Slitting Dashboard</span>
+    <span>Data from MCP Server · <span id="updateTime">—</span></span>
+  </div>
+
+</div>
+
+<script>
+(async function () {
+  function fmt(d) { return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
+
+  // Dashboard overview data (embedded from live query)
+  const dashboard = {
+    jobcardCount: 437,
+    customerCount: 184,
+    totalInvoices: 1638,
+    invoicesThisMonth: 27,
+    jobCardsThisMonth: 22,
+    stockInHand: 2649,
+    rawStockCount: 5809,
+    materialReceivedThisMonth: 1,
+    pendingSlitting: 51,
+    pendingPrinting: 4,
+    pendingCutting: 5,
+    completedJobCards: 5,
+    recentJobCards: [
+      { job_card_id:909, customer:"Hakimi Paper Sacks (Pvt) Ltd.", add_date:"2026-06-12", delivery_date:"2026-06-12", slitting_done:false, printing_done:false, cutting_done:false },
+      { job_card_id:908, customer:"Hakimi Paper Sacks (Pvt) Ltd.", add_date:"2026-06-11", delivery_date:"2026-06-12", slitting_done:false, printing_done:false, cutting_done:false },
+      { job_card_id:907, customer:"Lanka Premier Foods (Pvt) Ltd", add_date:"2026-06-11", delivery_date:"2026-06-12", slitting_done:false, printing_done:false, cutting_done:false },
+      { job_card_id:906, customer:"New Vaishnavi Vihar (Pvt) Ltd", add_date:"2026-06-10", delivery_date:"2026-06-11", slitting_done:false, printing_done:true, cutting_done:true },
+      { job_card_id:905, customer:"Hakimi Paper Sacks (Pvt) Ltd.", add_date:"2026-06-09", delivery_date:"2026-06-09", slitting_done:false, printing_done:false, cutting_done:false }
+    ]
+  };
+
+  // Slitting pending jobs (all section_list contains '1' and card_slitting=0)
+  const slittingJobs = [
+    { id:304, customer:"Lady J - Maharagama", paper:"SACK KRAFT ROLL", gsm:"70", size:"47CM", spec:"0", remark:"", date:"2024-10-29" },
+    { id:406, customer:"Little Lion Associates (Pvt) Ltd", paper:"SACK KRAFT PAPER", gsm:"70", size:"47CM", spec:"47Cm", remark:"55Cm-47Cm=8Cm Waste", date:"2025-03-06" },
+    { id:483, customer:"Masterbaker Lanka (Pvt) Ltd.", paper:"WHITE PAPER - CANADA (R)", gsm:"100", size:"72CM", spec:"69 Cm", remark:"72cm-3cm=Balance 3 Cm", date:"2025-06-03" },
+    { id:494, customer:"Perera & Sons Bakers (Pvt) Ltd", paper:"MG UNBLEACHED (UBS)", gsm:"40", size:"54CM", spec:"43.5", remark:"54 Cm-43.5Cm=Balance 10.5Cm", date:"2025-06-13" },
+    { id:504, customer:"Perera & Sons Bakers (Pvt) Ltd", paper:"MG UNBLEACHED (UBS)", gsm:"40", size:"54CM", spec:"43.5", remark:"(54-43.5)=10.5 Rest", date:"2025-07-04" },
+    { id:689, customer:"Perera & Sons Bakers (Pvt) Ltd", paper:"MG UNBLEACHED (UBS)", gsm:"40", size:"55CM", spec:"43.5", remark:"55 Cm-43.5 Cm=Balance 11.5 Cm", date:"2025-12-10" },
+    { id:694, customer:"Lanka Premier Foods (Pvt) Ltd", paper:"SACK KRAFT PAPER", gsm:"80", size:"41CM", spec:"—", remark:"—", date:"2025-12-15" },
+    { id:695, customer:"Mr .Burger", paper:"SACK KRAFT - AJITH", gsm:"80", size:"75CM", spec:"—", remark:"—", date:"2025-12-15" },
+    { id:697, customer:"Perera & Sons Bakers (Pvt) Ltd", paper:"SACK KRAFT PAPER", gsm:"80", size:"43CM", spec:"—", remark:"—", date:"2025-12-15" },
+    { id:698, customer:"Mr .Burger", paper:"SACK KRAFT PAPER", gsm:"70", size:"62CM", spec:"—", remark:"—", date:"2025-12-15" },
+    { id:699, customer:"Hakimi Paper Sacks (Pvt) Ltd.", paper:"SACK KRAFT PAPER", gsm:"50", size:"72CM", spec:"36Cm", remark:"36Cm x 2", date:"2025-12-15" },
+    { id:700, customer:"RAMS TRADING", paper:"SACK KRAFT - SERAPHIM", gsm:"60", size:"43CM", spec:"—", remark:"—", date:"2025-12-16" },
+    { id:701, customer:"Hakimi Paper Sacks (Pvt) Ltd.", paper:"DGP Brown kraft", gsm:"45", size:"43CM", spec:"—", remark:"—", date:"2025-12-16" },
+    { id:703, customer:"Burgers By Chappa", paper:"DGP Brown kraft", gsm:"45", size:"43CM", spec:"—", remark:"—", date:"2025-12-19" },
+    { id:704, customer:"Lady J - Maharagama", paper:"DGP Brown kraft", gsm:"45", size:"41CM", spec:"—", remark:"—", date:"2025-12-19" },
+    { id:705, customer:"Lady J - Maharagama", paper:"SACK KRAFT PAPER", gsm:"70", size:"47CM", spec:"—", remark:"—", date:"2025-12-19" },
+    { id:707, customer:"Little Lion Associates (Pvt) Ltd", paper:"MG KRAFT PAPER (SDP)", gsm:"70", size:"47CM", spec:"—", remark:"—", date:"2025-12-19" },
+    { id:708, customer:"Mallika Bakery & Restaurant", paper:"SACK KRAFT PAPER", gsm:"80", size:"43CM", spec:"—", remark:"—", date:"2025-12-22" },
+    { id:709, customer:"Masterbaker Lanka (Pvt) Ltd.", paper:"KRAFT PAPER - CANADA (R)", gsm:"100", size:"72CM", spec:"72cm-69cm", remark:"3cm slitting", date:"2025-12-23" },
+    { id:711, customer:"Celeste Daily", paper:"SACK KRAFT PAPER", gsm:"80", size:"41CM", spec:"—", remark:"—", date:"2025-12-26" },
+    { id:712, customer:"Celeste Daily", paper:"KRAFT PAPER - CANADA (R)", gsm:"115", size:"84CM", spec:"84cm-79cm", remark:"50mm slitting", date:"2025-12-26" },
+    { id:720, customer:"Glowbal Retail (Pvt) Ltd", paper:"SACK KRAFT - AJITH", gsm:"130", size:"91CM", spec:"91Cm x65Cm", remark:"Sheets for Glowbal", date:"2026-01-02" },
+    { id:752, customer:"Standard Holdings (Pvt) Ltd", paper:"DGP Brown kraft", gsm:"45", size:"52CM", spec:"52cm-48cm", remark:"4 cm", date:"2026-02-03" },
+    { id:755, customer:"Hakimi Paper Sacks (Pvt) Ltd.", paper:"SACK KRAFT - AJITH", gsm:"130", size:"91CM", spec:"—", remark:"—", date:"2026-02-05" },
+    { id:756, customer:"Hakimi Paper Sacks (Pvt) Ltd.", paper:"TEST LINER", gsm:"125", size:"67CM", spec:"—", remark:"—", date:"2026-02-05" },
+    { id:757, customer:"Hakimi Paper Sacks (Pvt) Ltd.", paper:"TEST LINER", gsm:"125", size:"71CM", spec:"—", remark:"—", date:"2026-02-05" },
+    { id:758, customer:"Hakimi Paper Sacks (Pvt) Ltd.", paper:"TEST LINER", gsm:"125", size:"55CM", spec:"—", remark:"—", date:"2026-02-05" }
+  ];
+
+  // Set date/time
+  document.getElementById('datetime').textContent = new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+  // Populate stats
+  document.getElementById('totalJobCards').textContent = dashboard.jobcardCount;
+  document.getElementById('pendingSlitting').textContent = dashboard.pendingSlitting;
+  document.getElementById('pendingPrinting').textContent = dashboard.pendingPrinting;
+  document.getElementById('pendingCutting').textContent = dashboard.pendingCutting;
+  document.getElementById('rawStockCount').textContent = dashboard.rawStockCount.toLocaleString() + ' reels';
+  document.getElementById('rawStockInHand').textContent = dashboard.rawStockCount.toLocaleString();
+  document.getElementById('materialBatchMonth').textContent = dashboard.materialReceivedThisMonth;
+  document.getElementById('stockInHand').textContent = dashboard.stockInHand.toLocaleString();
+  document.getElementById('slittingCount').textContent = dashboard.pendingSlitting + ' pending';
+  document.getElementById('printingCount').textContent = dashboard.pendingPrinting + ' pending';
+  document.getElementById('cuttingCount').textContent = dashboard.pendingCutting + ' pending';
+  document.getElementById('completedCount').textContent = dashboard.completedJobCards;
+
+  // Pipeline bar fills
+  const total = dashboard.pendingSlitting + dashboard.pendingPrinting + dashboard.pendingCutting + dashboard.completedJobCards;
+  if (total > 0) {
+    document.getElementById('slittingFill').style.width = (dashboard.pendingSlitting / total * 100) + '%';
+    document.getElementById('printingFill').style.width = (dashboard.pendingPrinting / total * 100) + '%';
+    document.getElementById('cuttingFill').style.width = (dashboard.pendingCutting / total * 100) + '%';
+    document.getElementById('completedFill').style.width = (dashboard.completedJobCards / total * 100) + '%';
+  }
+
+  document.getElementById('slittingJobHint').textContent = 'Showing ' + slittingJobs.length + ' of ' + dashboard.pendingSlitting + ' pending slitting jobs';
+
+  // Slitting jobs table
+  const tbody = document.getElementById('slittingJobsBody');
+  slittingJobs.forEach(j => {
+    const tr = document.createElement('tr');
+    const hasWaste = j.remark && (j.remark.includes('Waste') || j.remark.includes('Rest') || j.remark.includes('slit'));
+    tr.innerHTML = `
+      <td><strong>#${j.id}</strong></td>
+      <td class="customer">${j.customer}</td>
+      <td class="paper-type">${j.paper}</td>
+      <td class="gsm">${j.gsm}</td>
+      <td>${j.size}</td>
+      <td>${j.spec || '—'}</td>
+      <td>${j.remark || '—'}</td>
+      <td style="color:#6b7280;font-size:12px;">${fmt(j.date)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Wastage analysis
+  const wasteJobs = slittingJobs.filter(j => j.remark && (j.remark.includes('Waste') || j.remark.includes('Rest') || j.remark.toLowerCase().includes('cm') || j.remark.includes('slit')));
+  const noWasteJobs = slittingJobs.filter(j => !j.remark || j.remark === '—' || j.remark === '');
+  const widths = wasteJobs.map(j => {
+    const m = j.remark.match(/([\d.]+)\s*Cm/i);
+    return m ? parseFloat(m[1]) : null;
+  }).filter(w => w !== null);
+  const avgWaste = widths.length ? (widths.reduce((a,b)=>a+b,0) / widths.length).toFixed(1) : '—';
+
+  document.getElementById('wasteJobs').textContent = wasteJobs.length;
+  document.getElementById('totalWasteWidth').textContent = avgWaste + ' cm';
+  document.getElementById('noWasteJobs').textContent = noWasteJobs.length;
+
+  // Recent jobs
+  const recentBody = document.getElementById('recentJobsBody');
+  dashboard.recentJobCards.forEach(j => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>#${j.job_card_id}</strong></td>
+      <td class="customer">${j.customer}</td>
+      <td style="color:#6b7280;font-size:12px;">${fmt(j.add_date)}</td>
+      <td style="color:#6b7280;font-size:12px;">${fmt(j.delivery_date)}</td>
+      <td><span class="${j.slitting_done ? 'done' : 'pending'}">${j.slitting_done ? '✓ Done' : '◌ Pending'}</span></td>
+      <td><span class="${j.printing_done ? 'done' : 'pending'}">${j.printing_done ? '✓ Done' : '◌ Pending'}</span></td>
+      <td><span class="${j.cutting_done ? 'done' : 'pending'}">${j.cutting_done ? '✓ Done' : '◌ Pending'}</span></td>
+    `;
+    recentBody.appendChild(tr);
+  });
+
+  document.getElementById('updateTime').textContent = new Date().toLocaleString('en-GB');
+})();
+</script>
+</body>
+</html>
